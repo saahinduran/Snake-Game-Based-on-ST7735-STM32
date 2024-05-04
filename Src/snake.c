@@ -43,6 +43,7 @@ static void update_body(snake_t *snake)
 static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 {
 	bool isBaitEaten = false;
+	static bool isMotionDetected = false;
 	switch(dir )
 	{
 	case UP:
@@ -51,6 +52,7 @@ static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 			snake->dir.y = -STEP_SIZE;
 			snake->dir.x = 0;
 		}
+		isMotionDetected = true;
 		break;
 
 	case RIGHT:
@@ -59,6 +61,7 @@ static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 			snake->dir.x = STEP_SIZE;
 			snake->dir.y = 0;
 		}
+		isMotionDetected = true;
 		break;
 
 	case LEFT:
@@ -67,6 +70,7 @@ static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 			snake->dir.x = -STEP_SIZE;
 			snake->dir.y = 0;
 		}
+		isMotionDetected = true;
 		break;
 
 	case DOWN:
@@ -75,6 +79,7 @@ static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 			snake->dir.y = STEP_SIZE;
 			snake->dir.x = 0;
 		}
+		isMotionDetected = true;
 		break;
 
 
@@ -89,6 +94,30 @@ static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 
 	snake->head.x %= 128;
 	snake->head.y %= 128;
+
+	snake->head.x /= STEP_SIZE;
+	snake->head.x *= STEP_SIZE;
+
+	snake->head.y /= STEP_SIZE;
+	snake->head.y *= STEP_SIZE;
+
+	if( (snake->head.x % 3 != 0) || (snake->head.y % 3 != 0) )
+	{
+		asm volatile ("nop");
+	}
+
+	// Check if we ate ourself
+	for(int i = snake->len -1; i >= 0; i--)
+	{
+		if(snake->head.x == snake->body[i].x &&
+				snake->head.y == snake->body[i].y && isMotionDetected)
+		{
+			snake->score = snake->len;
+			snake->len = 0;
+			snake->head.x = 63;
+			snake->head.y = 63;
+		}
+	}
 
 	// Check if we ate the bait
 	if(snake->head.x == bait->x && snake->head.y == bait->y)
@@ -108,8 +137,10 @@ static void draw_snake(snake_t *snake)
 	{
 		ST7735_DrawPixel(snake->body[tempLen].x, snake->body[tempLen].y, WHITE);
 	}
-#endif
+#else
 	ST7735_DrawPixel(snake->body[0].x, snake->body[0].y, WHITE);
+#endif
+
 #ifdef ENABLE_BOLD_SNAKE
 	ST7735_DrawPixel(snake->body[0].x, snake->body[0].y+1, WHITE);
 	ST7735_DrawPixel(snake->body[0].x, snake->body[0].y-1, WHITE);
@@ -130,8 +161,10 @@ static void clear_snake(snake_t *snake)
 	{
 		ST7735_DrawPixel(snake->body[tempLen].x, snake->body[tempLen].y, BLACK);
 	}
-#endif
+#else
 	ST7735_DrawPixel(snake->body[snake->len].x, snake->body[snake->len].y, BLACK);
+#endif
+
 #ifdef ENABLE_BOLD_SNAKE
 	ST7735_DrawPixel(snake->body[snake->len].x, snake->body[snake->len].y, BLACK);
 	ST7735_DrawPixel(snake->body[snake->len].x, snake->body[snake->len].y+1, BLACK);
@@ -187,8 +220,34 @@ static void clear_bait(vec2_t *bait)
 #endif
 }
 
+static bool is_failed(snake_t *snake)
+{
+	bool retVal = false;
+
+	if(snake->len == 0)
+	{
+		retVal = true;
+	}
+
+	return retVal;
+}
+
+void snake_reset(snake_t *snake)
+{
+	char buffer[4];
+	ST7735_FillRectangle(0, 0, 128, 128, BLACK);
+	ST7735_WriteString(0, 0, "YOUR    SCORE   IS: ", Font_16x26, CYAN, BLACK);
+	itoa (snake->score,buffer,10);
+	ST7735_WriteString(3*16, 2*26, buffer, Font_16x26, CYAN, BLACK);
+	HAL_Delay(1000);
+	ST7735_FillRectangle(0, 0, 128, 128, BLACK);
+
+
+}
+
 void snake_main(void)
 {
+snake_main:
 	snake_t mySnake = {0};
 	mySnake.head.x = 63;
 	mySnake.head.y = 63;
@@ -207,6 +266,12 @@ void snake_main(void)
 			clear_bait(&bait);
 			bait = generate_bait();
 		}
+
+		if(is_failed(&mySnake) )
+		{
+			snake_reset(&mySnake);
+			goto snake_main;
+		}
 		draw_bait(&bait);
 		clear_snake(&mySnake);
 		update_body(&mySnake);
@@ -216,3 +281,6 @@ void snake_main(void)
 	}
 
 }
+
+
+

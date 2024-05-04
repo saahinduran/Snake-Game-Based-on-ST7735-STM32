@@ -50,6 +50,7 @@ typedef struct Snake
 	vec2_t body[MAX_LEN];
 	vec2_t head;
 	vec2_Int_t dir;
+	uint8_t score;
 	uint8_t len;
 
 }snake_t;
