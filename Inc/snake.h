@@ -9,6 +9,7 @@
 #define INC_SNAKE_H_
 
 #define MAX_LEN 256
+#define ENABLE_BOLD_SNAKE
 
 #define AND &&
 #define OR ||

@@ -106,6 +106,16 @@ static void draw_snake(snake_t *snake)
 	}
 #endif
 	ST7735_DrawPixel(snake->body[0].x, snake->body[0].y, WHITE);
+#ifdef ENABLE_BOLD_SNAKE
+	ST7735_DrawPixel(snake->body[0].x, snake->body[0].y+1, WHITE);
+	ST7735_DrawPixel(snake->body[0].x, snake->body[0].y-1, WHITE);
+	ST7735_DrawPixel(snake->body[0].x+1, snake->body[0].y, WHITE);
+	ST7735_DrawPixel(snake->body[0].x-1, snake->body[0].y, WHITE);
+	ST7735_DrawPixel(snake->body[0].x+1, snake->body[0].y+1, WHITE);
+	ST7735_DrawPixel(snake->body[0].x+1, snake->body[0].y-1, WHITE);
+	ST7735_DrawPixel(snake->body[0].x-1, snake->body[0].y+1, WHITE);
+	ST7735_DrawPixel(snake->body[0].x-1, snake->body[0].y-1, WHITE);
+#endif
 }
 
 static void clear_snake(snake_t *snake)
@@ -118,7 +128,17 @@ static void clear_snake(snake_t *snake)
 	}
 #endif
 	ST7735_DrawPixel(snake->body[snake->len].x, snake->body[snake->len].y, BLACK);
-
+#ifdef ENABLE_BOLD_SNAKE
+	ST7735_DrawPixel(snake->body[snake->len].x, snake->body[snake->len].y, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x, snake->body[snake->len].y+1, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x, snake->body[snake->len].y-1, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x+1, snake->body[snake->len].y, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x-1, snake->body[snake->len].y, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x+1, snake->body[snake->len].y+1, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x+1, snake->body[snake->len].y-1, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x-1, snake->body[snake->len].y+1, BLACK);
+	ST7735_DrawPixel(snake->body[snake->len].x-1, snake->body[snake->len].y-1, BLACK);
+#endif
 }
 
 static direction_t process_input(void)
