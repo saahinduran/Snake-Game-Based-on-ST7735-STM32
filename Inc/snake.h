@@ -10,6 +10,7 @@
 
 #define MAX_LEN 256
 #define ENABLE_BOLD_SNAKE
+#define STEP_SIZE 3
 
 #define AND &&
 #define OR ||

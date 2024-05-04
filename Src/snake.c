@@ -17,9 +17,13 @@ static vec2_t generate_bait(void)
 	vec2_t baitPos;
 	HAL_RNG_GenerateRandomNumber(&hrng, &baitPos.x);
 	baitPos.x %=128;
+	baitPos.x /= STEP_SIZE;
+	baitPos.x *= STEP_SIZE;
 
 	HAL_RNG_GenerateRandomNumber(&hrng, &baitPos.y);
 	baitPos.y %=128;
+	baitPos.y /= STEP_SIZE;
+	baitPos.y *= STEP_SIZE;
 
 	return baitPos;
 }
@@ -42,33 +46,33 @@ static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 	switch(dir )
 	{
 	case UP:
-		if(! (snake->dir.y == 1) )
+		if(! (snake->dir.y == STEP_SIZE) )
 		{
-			snake->dir.y = -1;
+			snake->dir.y = -STEP_SIZE;
 			snake->dir.x = 0;
 		}
 		break;
 
 	case RIGHT:
-		if(! (snake->dir.x == -1) )
+		if(! (snake->dir.x == -STEP_SIZE) )
 		{
-			snake->dir.x = 1;
+			snake->dir.x = STEP_SIZE;
 			snake->dir.y = 0;
 		}
 		break;
 
 	case LEFT:
-		if(! (snake->dir.x == 1) )
+		if(! (snake->dir.x == STEP_SIZE) )
 		{
-			snake->dir.x = -1;
+			snake->dir.x = -STEP_SIZE;
 			snake->dir.y = 0;
 		}
 		break;
 
 	case DOWN:
-		if(! (snake->dir.y == -1) )
+		if(! (snake->dir.y == -STEP_SIZE) )
 		{
-			snake->dir.y = 1;
+			snake->dir.y = STEP_SIZE;
 			snake->dir.x = 0;
 		}
 		break;
@@ -154,12 +158,33 @@ static direction_t process_input(void)
 static void draw_bait(vec2_t *bait)
 {
 	ST7735_DrawPixel(bait->x, bait->y, WHITE);
-
+#ifdef ENABLE_BOLD_SNAKE
+	ST7735_DrawPixel(bait->x, bait->y-1, WHITE);
+	ST7735_DrawPixel(bait->x, bait->y+1, WHITE);
+	ST7735_DrawPixel(bait->x+1, bait->y, WHITE);
+	ST7735_DrawPixel(bait->x+1, bait->y-1, WHITE);
+	ST7735_DrawPixel(bait->x+1, bait->y, WHITE);
+	ST7735_DrawPixel(bait->x+1, bait->y+1, WHITE);
+	ST7735_DrawPixel(bait->x-1, bait->y+1, WHITE);
+	ST7735_DrawPixel(bait->x-1, bait->y, WHITE);
+	ST7735_DrawPixel(bait->x-1, bait->y-1, WHITE);
+#endif
 }
 
 static void clear_bait(vec2_t *bait)
 {
 	ST7735_DrawPixel(bait->x, bait->y, BLACK);
+#ifdef ENABLE_BOLD_SNAKE
+	ST7735_DrawPixel(bait->x, bait->y-1, BLACK);
+	ST7735_DrawPixel(bait->x, bait->y+1, BLACK);
+	ST7735_DrawPixel(bait->x+1, bait->y, BLACK);
+	ST7735_DrawPixel(bait->x+1, bait->y-1, BLACK);
+	ST7735_DrawPixel(bait->x+1, bait->y, BLACK);
+	ST7735_DrawPixel(bait->x+1, bait->y+1, BLACK);
+	ST7735_DrawPixel(bait->x-1, bait->y+1, BLACK);
+	ST7735_DrawPixel(bait->x-1, bait->y, BLACK);
+	ST7735_DrawPixel(bait->x-1, bait->y-1, BLACK);
+#endif
 }
 
 void snake_main(void)
@@ -174,14 +199,15 @@ void snake_main(void)
 	draw_bait(&bait);
 	while(1)
 	{
+		//TODO: make one step 3 pixel big
 
 		dir = process_input();
 		if( update_head(&mySnake, dir, &bait) )
 		{
 			clear_bait(&bait);
 			bait = generate_bait();
-			draw_bait(&bait);
 		}
+		draw_bait(&bait);
 		clear_snake(&mySnake);
 		update_body(&mySnake);
 		draw_snake(&mySnake);
