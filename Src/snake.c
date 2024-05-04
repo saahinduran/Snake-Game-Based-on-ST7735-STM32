@@ -122,7 +122,7 @@ static bool update_head(snake_t *snake, direction_t dir, vec2_t *bait)
 	// Check if we ate the bait
 	if(snake->head.x == bait->x && snake->head.y == bait->y)
 	{
-		snake->len += 50;
+		snake->len += SCORE_STEP;
 		isBaitEaten = true;
 	}
 
@@ -182,6 +182,9 @@ static direction_t process_input(void)
 {
 	uint8_t key;
 	//HAL_UART_Receive(&huart3, &key, 1, 1);
+	/* Workaround for overrun error. When read data buffer is overrun, status register
+	 * should be read and overrun flag must be cleared to be able to read new data.
+	 */
 	uint32_t dummyRead = *(uint32_t *)0x4000481c;
 	*(uint32_t *)0x40004820 |= (0x1 << 3);
 	key = (uint8_t )*(uint32_t *)0x40004824;
@@ -234,6 +237,7 @@ static bool is_failed(snake_t *snake)
 
 void snake_reset(snake_t *snake)
 {
+	/* Print the score and clear the screen */
 	char buffer[4];
 	ST7735_FillRectangle(0, 0, 128, 128, BLACK);
 	ST7735_WriteString(0, 0, "YOUR    SCORE   IS: ", Font_16x26, CYAN, BLACK);
@@ -258,7 +262,6 @@ snake_main:
 	draw_bait(&bait);
 	while(1)
 	{
-		//TODO: make one step 3 pixel big
 
 		dir = process_input();
 		if( update_head(&mySnake, dir, &bait) )

@@ -8,9 +8,12 @@
 #ifndef INC_SNAKE_H_
 #define INC_SNAKE_H_
 
+
+/* GAME CONFIG */
 #define MAX_LEN 256
 #define ENABLE_BOLD_SNAKE
 #define STEP_SIZE 3
+#define SCORE_STEP 50
 
 #define AND &&
 #define OR ||
